@@ -1,7 +1,11 @@
+import FeaturedProducts from '@/components/home/FeaturedProducts'
+import Hero from '@/components/home/Hero'
+
 export default function Home() {
   return (
     <>
-      <h2 className="text-3xl mb-4">Homepage</h2>
+      <Hero />
+      <FeaturedProducts />
     </>
   )
 }
