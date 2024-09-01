@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Container from '../global/Container'
 import CartButton from './CartButton'
 import { DarkMode } from './DarkMode'
@@ -11,7 +12,10 @@ function Navbar() {
     <nav className="border-b">
       <Container className="flex flex-col sm:flex-row sm:justify-between flex-wrap gap-4 py-8">
         <Logo />
-        <NavSearch />
+        <Suspense>
+          <NavSearch />
+        </Suspense>
+
         <div className="flex gap-4 items-center">
           <CartButton />
           <DarkMode />
