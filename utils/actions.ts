@@ -4,7 +4,8 @@ import db from '@/utils/db'
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { imageSchema, productSchema, validateWithZodSchema } from './schemas'
-import { uploadImage } from './supabase'
+import { deleteImage, uploadImage } from './supabase'
+import { revalidatePath } from 'next/cache'
 
 const getAuthUser = async () => {
   const user = await currentUser()
@@ -97,4 +98,21 @@ export const fetchAdminProducts = async () => {
     },
   })
   return products
+}
+
+export const deleteProductAction = async (prevState: { productId: string }) => {
+  const { productId } = prevState
+  await getAdminUser()
+  try {
+    const product = await db.product.delete({
+      where: {
+        id: productId,
+      },
+    })
+    await deleteImage(product.image)
+    revalidatePath('/admin/products')
+    return { message: 'product removed' }
+  } catch (error) {
+    return renderError(error)
+  }
 }
