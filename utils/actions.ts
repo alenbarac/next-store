@@ -14,6 +14,12 @@ const getAuthUser = async () => {
   return user
 }
 
+const getAdminUser = async () => {
+  const user = await getAuthUser()
+  if (user.id !== process.env.ADMIN_USER_ID) redirect('/')
+  return user
+}
+
 const renderError = (error: unknown): { message: string } => {
   console.log(error)
   return {
@@ -55,18 +61,19 @@ export const fetchSingleProduct = async (productId: string) => {
   return product
 }
 
+//*** ADMIN CRUD ***//
+
 export const createProductAction = async (
   prevState: any,
   formData: FormData
 ): Promise<{ message: string }> => {
   const user = await getAuthUser()
+
   try {
     const rawData = Object.fromEntries(formData)
-    //image upload
     const file = formData.get('image') as File
     const validatedFields = validateWithZodSchema(productSchema, rawData)
     const validatedFile = validateWithZodSchema(imageSchema, { image: file })
-
     const fullPath = await uploadImage(validatedFile.image)
 
     await db.product.create({
@@ -80,4 +87,14 @@ export const createProductAction = async (
     return renderError(error)
   }
   redirect('/admin/products')
+}
+
+export const fetchAdminProducts = async () => {
+  await getAdminUser()
+  const products = await db.product.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+  })
+  return products
 }
