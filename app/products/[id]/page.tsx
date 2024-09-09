@@ -5,6 +5,8 @@ import { formatCurrency } from '@/utils/format'
 import FavoriteToggleButton from '@/components/products/FavoriteToggleButton'
 import AddToCart from '@/components/single-product/AddToCart'
 import ProductRating from '@/components/single-product/ProductRating'
+import ShareButton from '@/components/single-product/ShareButton'
+import SubmitReview from '@/components/reviews/SubmitReview'
 async function SingleProductPage({ params }: { params: { id: string } }) {
   const product = await fetchSingleProduct(params.id)
   const { name, image, company, description, price } = product
@@ -26,9 +28,10 @@ async function SingleProductPage({ params }: { params: { id: string } }) {
         </div>
         {/* PRODUCT INFO SECOND COL */}
         <div>
-          <div className="flex gap-x-8 items-center">
+          <div className="flex gap-x-4 items-center">
             <h1 className="capitalize text-3xl font-bold">{name}</h1>
             <FavoriteToggleButton productId={params.id} />
+            <ShareButton productId={params.id} name={name} />
           </div>
           <ProductRating productId={params.id} />
           <h4 className="text-xl mt-2">{company}</h4>
@@ -37,6 +40,9 @@ async function SingleProductPage({ params }: { params: { id: string } }) {
           <AddToCart productId={params.id} />
         </div>
       </div>
+      <>
+        <SubmitReview productId={params.id} />
+      </>
     </section>
   )
 }

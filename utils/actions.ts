@@ -3,7 +3,7 @@
 import db from '@/utils/db'
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import { imageSchema, productSchema, validateWithZodSchema } from './schemas'
+import { imageSchema, productSchema, reviewSchema, validateWithZodSchema } from './schemas'
 import { deleteImage, uploadImage } from './supabase'
 import { revalidatePath } from 'next/cache'
 
@@ -231,4 +231,84 @@ export const fetchFavorites = async () => {
       product: true,
     },
   })
+}
+
+export const createReviewAction = async (prevState: any, formData: FormData) => {
+  const user = await getAuthUser()
+  try {
+    const rawData = Object.fromEntries(formData)
+    const validatedFields = validateWithZodSchema(reviewSchema, rawData)
+    await db.review.create({
+      data: {
+        ...validatedFields,
+        clerkId: user.id,
+      },
+    })
+    revalidatePath(`/products/${validatedFields.productId}`)
+    return { message: 'Review added' }
+  } catch (error) {
+    return renderError(error)
+  }
+}
+
+export const fetchProductReviews = async (productId: string) => {
+  return db.review.findMany({
+    where: {
+      productId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  })
+}
+
+export const fetchProductReviewsByUser = async (userId: string) => {
+  return db.review.findMany({
+    where: {
+      clerkId: userId,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  })
+}
+
+export const deleteReviewAction = async (prevState: { reviewId: string }) => {
+  const { reviewId } = prevState
+  await getAuthUser()
+  try {
+    await db.review.delete({
+      where: {
+        id: reviewId,
+      },
+    })
+    revalidatePath('/reviews')
+    return { message: 'Review removed' }
+  } catch (error) {
+    return renderError(error)
+  }
+}
+
+export const findExisitingREview = async (productId: string, userId: string) => {
+  return db.review.findFirst({
+    where: {
+      productId,
+      clerkId: userId,
+    },
+  })
+}
+
+export const fetchProductRating = async (productId: string) => {
+  const reviews = await db.review.findMany({
+    where: {
+      productId,
+    },
+    select: {
+      rating: true,
+    },
+  })
+  const total = reviews.length
+  const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
+  const average = sum / total
+  return average
 }
