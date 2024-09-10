@@ -289,7 +289,7 @@ export const deleteReviewAction = async (prevState: { reviewId: string }) => {
   }
 }
 
-export const findExisitingREview = async (productId: string, userId: string) => {
+export const findExisitingReview = async (productId: string, userId: string) => {
   return db.review.findFirst({
     where: {
       productId,
@@ -299,16 +299,22 @@ export const findExisitingREview = async (productId: string, userId: string) => 
 }
 
 export const fetchProductRating = async (productId: string) => {
-  const reviews = await db.review.findMany({
+  const result = await db.review.groupBy({
+    by: ['productId'],
+    _avg: {
+      rating: true,
+    },
+    _count: {
+      rating: true,
+    },
     where: {
       productId,
     },
-    select: {
-      rating: true,
-    },
   })
-  const total = reviews.length
-  const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
-  const average = sum / total
-  return average
+
+  // empty array if no reviews
+  return {
+    rating: result[0]?._avg.rating?.toFixed(1) ?? 0,
+    count: result[0]?._count.rating ?? 0,
+  }
 }
