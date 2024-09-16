@@ -80,3 +80,13 @@ export const CardSubmitButton = ({ isFavorite }: { isFavorite: boolean }) => {
     </Button>
   )
 }
+
+export const ProductSigningButton = () => {
+  return (
+    <SignInButton mode="modal">
+      <Button type="button" className="mt-8 capitalize">
+        Sigin in
+      </Button>
+    </SignInButton>
+  )
+}
